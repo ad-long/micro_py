@@ -7,12 +7,15 @@ result: 000001: 平安银行
         code: name
 """
 
-from flask import Flask
+from flask import Flask,jsonify
 import requests
-import json
+import sys
+sys.path.append("..")
+from utils.response import stand_response_ok,stand_response_error
 
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 def __get_val(map_val:map):
     key = map_val["f12"]
@@ -36,14 +39,14 @@ def code_sz():
     }
     resp = requests.get(url, headers=headers)
     if not resp.ok:
-        return {}
+        return stand_response_error(None)
 
     result = resp.json()
     if not result["data"] or not result["data"]["diff"]:
-        return {}
+        return stand_response_error(None)
 
     result = map(__get_val,result["data"]["diff"])
-    return json.dumps(list(result))
+    return stand_response_ok(list(result))
 
 @app.route("/code/sh", methods=['GET'])
 def code_sh():
@@ -62,11 +65,11 @@ def code_sh():
     }
     resp = requests.get(url, headers=headers)
     if not resp.ok:
-        return {}
+        return stand_response_error(None)
 
     result = resp.json()
     if "data" not in result or "diff" not in result["data"]:
-        return {}
+        return stand_response_error(None)
 
     result = map(__get_val,result["data"]["diff"])
-    return json.dumps(list(result))
+    return stand_response_ok(list(result))

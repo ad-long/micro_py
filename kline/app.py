@@ -8,12 +8,14 @@ result: 2022-05-31: 14.07,14.16,14.18,14.00,938869,1325012048.00,1.28,0.57,0.08,
 """
 
 
-from flask import Flask
+from flask import Flask,jsonify
 import requests
-import json
-
+import sys
+sys.path.append("..")
+from utils.response import stand_response_ok,stand_response_error
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 def __to_json(kline_str:str):
     array_temp = kline_str.split(",")
@@ -36,12 +38,12 @@ def kline_sz(code):
     }
     resp = requests.get(url, headers=headers)
     if not resp.ok:
-        return {}
+        return stand_response_error(None)
     result = resp.json()
     if "data" not in result or "klines" not in result["data"]:
-        return {}
+        return stand_response_error(None)
     result = map(__to_json, result["data"]["klines"])
-    return json.dumps(list(result))
+    return stand_response_ok(list(result))
 
 
 @app.route("/kline/sh/<string:code>", methods=['GET'])
@@ -59,9 +61,9 @@ def kline_sh(code):
     }
     resp = requests.get(url, headers=headers)
     if not resp.ok:
-        return {}
+        return stand_response_error(None)
     result = resp.json()
     if "data" not in result or "klines" not in result["data"]:
-        return {}
+        return stand_response_error(None)
     result = map(__to_json, result["data"]["klines"])
-    return json.dumps(list(result))
+    return stand_response_ok(list(result))
