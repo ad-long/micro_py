@@ -1,14 +1,33 @@
 """get daily kline data within a year
-url: http://127.0.0.1:5000/kline/sz/000001
-     http://127.0.0.1:5000/kline/sh/600000
+url: get http://127.0.0.1:5000/kline/sz/000001
+     get http://127.0.0.1:5000/kline/sh/600000
      
-result: 2022-05-31: 14.07,14.16,14.18,14.00,938869,1325012048.00,1.28,0.57,0.08,0.48
-        2022-05-31: 7.90,7.94,7.98,7.88,317509,251916051.00,1.27,0.76,0.06,0.11
-        date: open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)
+response(json):
+{
+    "code": "ok",
+    "data": [
+        {
+            "2020-11-27": [
+                "20.00",
+                "19.70",
+                "20.00",
+                "19.38",
+                "753774",
+                "1479430640.00",
+                "3.18",
+                "1.03",
+                "0.20",
+                "0.39"
+            ]
+        }
+    ],
+    "ts": 1654073625977
+}
+date: open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)
 """
 
 
-from flask import Flask,jsonify
+from flask import Flask
 import requests
 import sys
 sys.path.append("..")

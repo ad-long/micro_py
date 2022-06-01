@@ -1,13 +1,21 @@
 """get all trade codes of sz/sh
-url: http://127.0.0.1:5000/code/sz
-     http://127.0.0.1:5000/code/sh
+url: get http://127.0.0.1:5000/code/sz
+     get http://127.0.0.1:5000/code/sh
      
-result: 000001: 平安银行
-        600000: 浦发银行
-        code: name
+response(json):
+{
+    "code": "ok",
+    "data": [
+        {
+            "300370": "*ST安控"
+        }
+    ],
+    "ts": 1654073761668
+}
+code: name
 """
 
-from flask import Flask,jsonify
+from flask import Flask
 import requests
 import sys
 sys.path.append("..")
