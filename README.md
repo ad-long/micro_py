@@ -1,5 +1,5 @@
 # install gunicorn flask
-pip3 install gunicorn flask
+pip3 install gunicorn flask cachetools
 
 # run kline service in dev
 ``` shell

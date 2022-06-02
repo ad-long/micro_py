@@ -19,8 +19,8 @@ from flask import Flask
 import requests
 import sys
 sys.path.append("..")
-from utils.response import stand_response_ok,stand_response_error
-
+from utils.response import stand_response_ok,stand_response_error,get_ts_h
+from cachetools import cached,Cache
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -30,6 +30,7 @@ def __get_val(map_val:map):
     values = map_val["f14"]
     return {key:values}
 
+@cached(cache= {}, key=get_ts_h)
 @app.route("/code/sz", methods=['GET'])
 def code_sz():
     page_size = 10000
@@ -56,6 +57,8 @@ def code_sz():
     result = map(__get_val,result["data"]["diff"])
     return stand_response_ok(list(result))
 
+
+@cached(cache= {}, key=get_ts_h)
 @app.route("/code/sh", methods=['GET'])
 def code_sh():
     page_size = 10000
