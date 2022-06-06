@@ -3,6 +3,8 @@ this project is tools for trading china stocks.
 - get listed stocks code
 - get daily kline data within a year
 - send email msg
+- get top N net inflow code
+- get trade info of code
 
 # install gunicorn flask
 pip3 install gunicorn flask cachetools
