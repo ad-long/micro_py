@@ -1,3 +1,9 @@
+# what for
+this project is tools for trading china stocks.
+- get listed stocks code
+- get daily kline data within a year
+- send email msg
+
 # install gunicorn flask
 pip3 install gunicorn flask cachetools
 
