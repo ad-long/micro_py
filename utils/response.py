@@ -3,10 +3,10 @@ import time
 
 
 def stand_response_ok(data:object):
-    return jsonify(code="ok", data=data, ts=get_ts_ms())
+    return jsonify(code="ok", ts=get_ts_ms(), data=data)
 
 def stand_response_error(data:object):
-    return jsonify(code="error", data=data, ts=get_ts_ms())
+    return jsonify(code="error", ts=get_ts_ms(), data=data)
 
 def get_ts_ms():
     return int(time.time()*1000)
