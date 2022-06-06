@@ -23,7 +23,7 @@ response(json):
     ],
     "ts": 1654073625977
 }
-date: open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)
+date: [open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)]
 """
 
 
