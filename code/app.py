@@ -5,12 +5,12 @@ url: get http://127.0.0.1:5000/code/sz
 response(json):
 {
     "code": "ok",
+    "ts": 1654073761668,
     "data": [
         {
             "300370": "*ST安控"
         }
-    ],
-    "ts": 1654073761668
+    ]
 }
 code: name
 """

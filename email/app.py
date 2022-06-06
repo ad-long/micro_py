@@ -14,8 +14,8 @@ body(json):
 response(json):
 {
     "code": "ok",
-    "data": null,
-    "ts": 1654073447104
+    "ts": 1654073447104,
+    "data": null
 }
 """
 

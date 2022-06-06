@@ -5,6 +5,7 @@ url: get http://127.0.0.1:5000/kline/sz/000001
 response(json):
 {
     "code": "ok",
+    "ts": 1654073625977,
     "data": [
         {
             "2020-11-27": [
@@ -20,8 +21,7 @@ response(json):
                 "0.39"
             ]
         }
-    ],
-    "ts": 1654073625977
+    ]
 }
 date: [open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)]
 """
