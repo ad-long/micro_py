@@ -27,7 +27,7 @@ def net_flow_sz(top):
     result = []
     
     url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f267&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:0+t:6,m:0+t:80&fields=f12,f14,f62,f267,f164,f174'
-    headers = headers = {
+    headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
         "Connection": "keep-alive",
