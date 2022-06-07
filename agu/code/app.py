@@ -1,24 +1,24 @@
 """get all trade codes of sz/sh
-url: get http://127.0.0.1:5000/code/sz
-     get http://127.0.0.1:5000/code/sh
+url: get http://127.0.0.1:5000/agu/code/sz
+     get http://127.0.0.1:5000/agu/code/sh
      
 response(json):
 {
     "code": "ok",
     "ts": 1654073761668,
     "data": [
-        {
-            "300370": "*ST安控"
-        }
+        [
+            "300370","*ST安控"
+        ]
     ]
 }
-code: name
+[code,name]
 """
 
 from flask import Flask
 import requests
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 from utils.response import stand_response_ok,stand_response_error,get_ts_h
 from cachetools import cached,Cache
 
@@ -28,10 +28,10 @@ app.config['JSON_AS_ASCII'] = False
 def __get_val(map_val:map):
     key = map_val["f12"]
     values = map_val["f14"]
-    return {key:values}
+    return [key,values]
 
 @cached(cache= {}, key=get_ts_h)
-@app.route("/code/sz", methods=['GET'])
+@app.route("/agu/code/sz", methods=['GET'])
 def code_sz():
     page_size = 10000
 
@@ -59,7 +59,7 @@ def code_sz():
 
 
 @cached(cache= {}, key=get_ts_h)
-@app.route("/code/sh", methods=['GET'])
+@app.route("/agu/code/sh", methods=['GET'])
 def code_sh():
     page_size = 10000
 

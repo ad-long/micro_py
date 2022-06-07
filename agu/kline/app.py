@@ -1,6 +1,6 @@
 """get daily kline data within a year
-url: get http://127.0.0.1:5000/kline/sz/000001
-     get http://127.0.0.1:5000/kline/sh/600000
+url: get http://127.0.0.1:5000/agu/kline/sz/000001
+     get http://127.0.0.1:5000/agu/kline/sh/600000
      
 response(json):
 {
@@ -30,7 +30,7 @@ date: [open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)]
 from flask import Flask
 import requests
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 from utils.response import stand_response_ok,stand_response_error
 
 app = Flask(__name__)
@@ -42,7 +42,7 @@ def __to_json(kline_str:str):
     values = array_temp[1:]
     return {key:values}
 
-@app.route("/kline/sz/<string:code>", methods=['GET'])
+@app.route("/agu/kline/sz/<string:code>", methods=['GET'])
 def kline_sz(code):
     url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=0.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=365'
     headers = {
@@ -65,7 +65,7 @@ def kline_sz(code):
     return stand_response_ok(list(result))
 
 
-@app.route("/kline/sh/<string:code>", methods=['GET'])
+@app.route("/agu/kline/sh/<string:code>", methods=['GET'])
 def kline_sh(code):
     url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=1.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=365'
     headers = {
