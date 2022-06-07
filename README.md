@@ -1,5 +1,5 @@
 # what for
-this project is tools for trading china stocks.
+this project is tools for trading stocks.
 ## agu
 - get listed stocks code
 - get daily kline data within a year
