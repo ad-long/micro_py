@@ -32,6 +32,7 @@ import requests
 import sys
 sys.path.append("../..")
 from utils.response import stand_response_ok,stand_response_error
+from cachetools import cached,TTLCache
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -42,6 +43,7 @@ def __to_json(kline_str:str):
     values = array_temp[1:]
     return {key:values}
 
+@cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/kline/sz/<string:code>", methods=['GET'])
 def kline_sz(code):
     url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=0.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=365'
@@ -65,6 +67,7 @@ def kline_sz(code):
     return stand_response_ok(list(result))
 
 
+@cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/kline/sh/<string:code>", methods=['GET'])
 def kline_sh(code):
     url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=1.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=365'

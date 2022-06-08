@@ -34,10 +34,13 @@ import requests
 import sys
 sys.path.append("../..")
 from utils.response import stand_response_ok,stand_response_error
+from cachetools import cached,TTLCache
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
+
+@cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/net_flow/sz/<int:top>", methods=['GET'])
 def net_flow_sz(top):
     size = 10*top if top < 10 else 5*top
@@ -83,6 +86,7 @@ def net_flow_sz(top):
     return stand_response_ok(result)
 
 
+@cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/net_flow/sh/<int:top>", methods=['GET'])
 def net_flow_sh(top):
     size = 10*top if top < 10 else 5*top

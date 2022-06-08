@@ -27,10 +27,14 @@ import requests
 import sys
 sys.path.append("../..")
 from utils.response import stand_response_ok,stand_response_error
+from cachetools import cached,TTLCache
+
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
+
+@cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/trade_info/sz/<string:code>", methods=['GET'])
 def trade_info_sz(code):
     if not code.startswith('00') and not code.startswith('30'):
@@ -72,6 +76,7 @@ def trade_info_sz(code):
     return stand_response_ok({code:infos})
 
 
+@cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/trade_info/sh/<string:code>", methods=['GET'])
 def trade_info_sh(code):
     if not code.startswith('60') and not code.startswith('6'):
