@@ -1,4 +1,4 @@
-"""get net flow top N
+"""get net flow top N order by 3day net inflow desc
 url: get http://127.0.0.1:5000/agu/net_flow/sz/10
      get http://127.0.0.1:5000/agu/net_flow/sh/10
      
@@ -43,7 +43,7 @@ def net_flow_sz(top):
     size = 10*top if top < 10 else 5*top
     result = []
     
-    url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:0+t:6,m:0+t:80&fields=f12,f14,f62,f267,f164'
+    url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f267&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:0+t:6,m:0+t:80&fields=f12,f14,f62,f267,f164'
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
@@ -88,7 +88,7 @@ def net_flow_sh(top):
     size = 10*top if top < 10 else 5*top
     result = []
     
-    url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f62&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:1+t:2,m:1+t:23&fields=f12,f14,f62,f267,f164'
+    url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f267&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:1+t:2,m:1+t:23&fields=f12,f14,f62,f267,f164'
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
