@@ -2,7 +2,7 @@
 this project is tools for trading stocks.
 ## agu
 - get listed stocks code
-- get daily kline data within a year
+- get daily kline data within 3 years
 - send email msg
 - get top N net inflow code
 - get trade info of code
