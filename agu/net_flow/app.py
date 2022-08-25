@@ -4,40 +4,48 @@ url: get http://127.0.0.1:5000/agu/net_flow/sz/10
      
 response(json):
 {
-    "code":"ok",
+    "status":"ok",
+    "ts":1661409675678,
+    "cols":{
+        "code":[
+            "today inflow",
+            "3day inflow",
+            "5day inflow",
+            "name"
+        ]
+    },
     "data":[
         {
-            "300347":[
-                109507071,
-                144504828,
-                217263038,
-                "泰格医药"
+            "002714":[
+                121459104,
+                459015210,
+                711982826,
+                "牧原股份"
             ]
         },
         {
-            "002001":[
-                109446001,
-                238696961,
-                364054898,
-                "新 和 成"
+            "002385":[
+                227562192,
+                449765289,
+                481842943,
+                "大北农"
             ]
         }
-    ],
-    "ts":1654570561323
+    ]
 }
-{code:[today inflow,3day inflow,5day inflow,name]}
 """
 
 
+from cachetools import cached, TTLCache
 from flask import Flask
 import requests
 import sys
 sys.path.append("../..")
-from utils.response import stand_response_ok,stand_response_error
-from cachetools import cached,TTLCache
+from utils.response import stand_response_ok, stand_response_error
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['JSON_SORT_KEYS'] = False
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
@@ -45,7 +53,7 @@ app.config['JSON_AS_ASCII'] = False
 def net_flow_sz(top):
     size = 10*top if top < 10 else 5*top
     result = []
-    
+
     url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f267&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:0+t:6,m:0+t:80&fields=f12,f14,f62,f267,f164'
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
@@ -64,7 +72,7 @@ def net_flow_sz(top):
     jdata = resp.json()
     if 'data' not in jdata.keys():
         return stand_response_error(None)
-        
+
     data = jdata['data']['diff']
     for item in data:
         code = item['f12']  # code
@@ -80,10 +88,12 @@ def net_flow_sz(top):
         if in_flows[0] == '-' or in_flows[1] == '-' or in_flows[2] == '-':
             continue
         if in_flows[0] > 0 and (in_flows[1] - in_flows[0]) > 0 and (in_flows[2] - in_flows[1]) > 0:
-            result.append({code:in_flows})
+            result.append({code: in_flows})
         if len(result) >= top:
             break
-    return stand_response_ok(result)
+
+    cols = {'code': ['today inflow', '3day inflow', '5day inflow', 'name']}
+    return stand_response_ok(cols, result)
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
@@ -91,7 +101,7 @@ def net_flow_sz(top):
 def net_flow_sh(top):
     size = 10*top if top < 10 else 5*top
     result = []
-    
+
     url = f'https://push2.eastmoney.com/api/qt/clist/get?fid=f267&po=1&pz={size}&pn=1&np=1&fltt=2&invt=2&fs=m:1+t:2,m:1+t:23&fields=f12,f14,f62,f267,f164'
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
@@ -126,7 +136,9 @@ def net_flow_sh(top):
         if in_flows[0] == '-' or in_flows[1] == '-' or in_flows[2] == '-':
             continue
         if in_flows[0] > 0 and (in_flows[1] - in_flows[0]) > 0 and (in_flows[2] - in_flows[1]) > 0:
-            result.append({code:in_flows})
+            result.append({code: in_flows})
         if len(result) >= top:
             break
-    return stand_response_ok(result)
+
+    cols = {'code': ['today inflow', '3day inflow', '5day inflow', 'name']}
+    return stand_response_ok(cols, result)

@@ -4,34 +4,41 @@ url: get http://127.0.0.1:5000/agu/trade_info/sz/000001
      
 response(json):
 {
-    "code":"ok",
-    "data":{
-        "600000":[
-            19388000000,
-            231001592546.07,
-            0.4,
-            50002000000,
-            0.9692661847,
-            3.695780071669,
-            19991110
-        ]
-    },
-    "ts":1654570944849
+    "status":"ok",
+    "ts":1661409851501,
+    "cols":[
+        "净利润",
+        "流通市值",
+        "市净率",
+        "总营收",
+        "总营收同比",
+        "净利润同比",
+        "上市时间"
+    ],
+    "data":[
+        22088000000,
+        244703947039.5,
+        0.72,
+        92022000000,
+        8.6702881436,
+        25.621338793153,
+        19910403
+    ]
 }
-{代码:[净利润,流通市值,市净率,总营收,总营收同比,净利润同比,上市时间]}
 """
 
 
+from cachetools import cached, TTLCache
 from flask import Flask
 import requests
 import sys
 sys.path.append("../..")
-from utils.response import stand_response_ok,stand_response_error
-from cachetools import cached,TTLCache
+from utils.response import stand_response_ok, stand_response_error
 
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['JSON_SORT_KEYS'] = False
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
@@ -40,9 +47,11 @@ def trade_info_sz(code):
     if not code.startswith('00') and not code.startswith('30'):
         return stand_response_error(f"{code} is not sz code.")
     lcode = '0.' + code
-    url = 'https://push2.eastmoney.com/api/qt/stock/get?&invt=2&fltt=2&fields=f57,f105,f117,f167,f183,f184,f185,f189&secid={0}'.format(lcode)
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
-    
+    url = 'https://push2.eastmoney.com/api/qt/stock/get?&invt=2&fltt=2&fields=f57,f105,f117,f167,f183,f184,f185,f189&secid={0}'.format(
+        lcode)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
+
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
@@ -73,7 +82,8 @@ def trade_info_sz(code):
     infos.append(data['f185'])  # 净利润同比
     infos.append(data['f189'])  # 上市时间
 
-    return stand_response_ok({code:infos})
+    cols = ['净利润', '流通市值', '市净率', '总营收', '总营收同比', '净利润同比', '上市时间']
+    return stand_response_ok(cols, infos)
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
@@ -82,9 +92,11 @@ def trade_info_sh(code):
     if not code.startswith('60') and not code.startswith('6'):
         return stand_response_error(f"{code} is not sh code.")
     lcode = '1.' + code
-    url = 'https://push2.eastmoney.com/api/qt/stock/get?&invt=2&fltt=2&fields=f57,f105,f117,f167,f183,f184,f185,f189&secid={0}'.format(lcode)
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
-    
+    url = 'https://push2.eastmoney.com/api/qt/stock/get?&invt=2&fltt=2&fields=f57,f105,f117,f167,f183,f184,f185,f189&secid={0}'.format(
+        lcode)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
+
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
@@ -115,4 +127,5 @@ def trade_info_sh(code):
     infos.append(data['f185'])  # 净利润同比
     infos.append(data['f189'])  # 上市时间
 
-    return stand_response_ok({code:infos})
+    cols = ['净利润', '流通市值', '市净率', '总营收', '总营收同比', '净利润同比', '上市时间']
+    return stand_response_ok(cols, infos)

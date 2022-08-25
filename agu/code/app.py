@@ -4,31 +4,38 @@ url: get http://127.0.0.1:5000/agu/code/sz
      
 response(json):
 {
-    "code": "ok",
-    "ts": 1654073761668,
-    "data": [
+    "status":"ok",
+    "ts":1661409010342,
+    "cols":[
+        "code",
+        "name"
+    ],
+    "data":[
         [
-            "300370","*ST安控"
+            "688247",
+            "N宣泰"
         ]
     ]
 }
-[code,name]
 """
 
+from cachetools import cached, TTLCache
 from flask import Flask
 import requests
 import sys
 sys.path.append("../..")
-from utils.response import stand_response_ok,stand_response_error,get_ts_h
-from cachetools import cached,TTLCache
+from utils.response import stand_response_ok, stand_response_error, get_ts_h
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['JSON_SORT_KEYS'] = False
 
-def __get_val(map_val:map):
+
+def __get_val(map_val: map):
     key = map_val["f12"]
     values = map_val["f14"]
-    return [key,values]
+    return [key, values]
+
 
 @cached(cache=TTLCache(maxsize=None, ttl=60*60))
 @app.route("/agu/code/sz", methods=['GET'])
@@ -53,9 +60,12 @@ def code_sz():
     result = resp.json()
     if not result["data"] or not result["data"]["diff"]:
         return stand_response_error(None)
+    result = map(__get_val, result["data"]["diff"])
+    result = list(result)
+    result = sorted(result, key=lambda x: x[0])
 
-    result = map(__get_val,result["data"]["diff"])
-    return stand_response_ok(list(result))
+    cols = ['code', 'name']
+    return stand_response_ok(cols, result)
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=60*60))
@@ -81,6 +91,9 @@ def code_sh():
     result = resp.json()
     if "data" not in result or "diff" not in result["data"]:
         return stand_response_error(None)
+    result = map(__get_val, result["data"]["diff"])
+    result = list(result)
+    result = sorted(result, key=lambda x: x[0])
 
-    result = map(__get_val,result["data"]["diff"])
-    return stand_response_ok(list(result))
+    cols = ['code', 'name']
+    return stand_response_ok(cols, result)

@@ -4,44 +4,60 @@ url: get http://127.0.0.1:5000/agu/kline/sz/000001
      
 response(json):
 {
-    "code": "ok",
-    "ts": 1654073625977,
-    "data": [
+    "status":"ok",
+    "ts":1661409491722,
+    "cols":{
+        "date":[
+            "open",
+            "close",
+            "high",
+            "low",
+            "vol",
+            "amount",
+            "h-l(p)",
+            "c-o(p)",
+            "gain(amount)",
+            "gain(p)"
+        ]
+    },
+    "data":[
         {
-            "2020-11-27": [
-                "20.00",
-                "19.70",
-                "20.00",
-                "19.38",
-                "753774",
-                "1479430640.00",
-                "3.18",
-                "1.03",
-                "0.20",
-                "0.39"
+            "2021-03-01":[
+                "21.54",
+                "21.45",
+                "21.68",
+                "21.18",
+                "1125387",
+                "2408050912.00",
+                "2.34",
+                "0.33",
+                "0.07",
+                "0.58"
             ]
         }
     ]
 }
-date: [open,close,high,low,vol,amount,h-l(p),c-o(p),gain(amount),gain(p)]
 """
 
 
+from cachetools import cached, TTLCache
 from flask import Flask
 import requests
 import sys
 sys.path.append("../..")
-from utils.response import stand_response_ok,stand_response_error
-from cachetools import cached,TTLCache
+from utils.response import stand_response_ok, stand_response_error
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['JSON_SORT_KEYS'] = False
 
-def __to_json(kline_str:str):
+
+def __to_json(kline_str: str):
     array_temp = kline_str.split(",")
     key = array_temp[0]
     values = array_temp[1:]
-    return {key:values}
+    return {key: values}
+
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/kline/sz/<string:code>", methods=['GET'])
@@ -63,8 +79,11 @@ def kline_sz(code):
     result = resp.json()
     if "data" not in result or "klines" not in result["data"]:
         return stand_response_error(None)
+
+    cols = {'date': ['open', 'close', 'high', 'low', 'vol',
+                     'amount', 'h-l(p)', 'c-o(p)', 'gain(amount)', 'gain(p)']}
     result = map(__to_json, result["data"]["klines"])
-    return stand_response_ok(list(result))
+    return stand_response_ok(cols, list(result))
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
@@ -87,5 +106,8 @@ def kline_sh(code):
     result = resp.json()
     if "data" not in result or "klines" not in result["data"]:
         return stand_response_error(None)
+
+    cols = {'date': ['open', 'close', 'high', 'low', 'vol',
+                     'amount', 'h-l(p)', 'c-o(p)', 'gain(amount)', 'gain(p)']}
     result = map(__to_json, result["data"]["klines"])
-    return stand_response_ok(list(result))
+    return stand_response_ok(cols, list(result))
