@@ -40,16 +40,18 @@ response(json):
 """
 
 
+from utils.response import stand_response_ok, stand_response_error
 from cachetools import cached, TTLCache
 from flask import Flask
 import requests
 import sys
 sys.path.append("../..")
-from utils.response import stand_response_ok, stand_response_error
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 app.config['JSON_SORT_KEYS'] = False
+
+KLINE_SIZE = 365*3-115
 
 
 def __to_json(kline_str: str):
@@ -62,7 +64,9 @@ def __to_json(kline_str: str):
 @cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/kline/sz/<string:code>", methods=['GET'])
 def kline_sz(code):
-    url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=0.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=780'
+    global KLINE_SIZE
+    
+    url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=0.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt={KLINE_SIZE}'
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
@@ -89,7 +93,7 @@ def kline_sz(code):
 @cached(cache=TTLCache(maxsize=None, ttl=1))
 @app.route("/agu/kline/sh/<string:code>", methods=['GET'])
 def kline_sh(code):
-    url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=1.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=780'
+    url = f'https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid=1.{code}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt={KLINE_SIZE}'
     headers = {
         "Accept-Encoding": "gzip, deflate, sdch",
         "Referer": "http://quote.eastmoney.com/",
