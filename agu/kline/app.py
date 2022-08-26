@@ -51,7 +51,7 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 app.config['JSON_SORT_KEYS'] = False
 
-KLINE_SIZE = 365*3-115
+KLINE_SIZE = 365*3-116*2-115
 
 
 def __to_json(kline_str: str):
