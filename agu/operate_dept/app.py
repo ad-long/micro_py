@@ -53,7 +53,7 @@ __HEADERS = {
 def get_operate_dept() -> map:
   today = date.today()-timedelta(days=1)
   d1 = today.strftime("%Y-%m-%d")
-  url = f"https://datacenter-web.eastmoney.com/api/data/v1/get?sortColumns=TOTAL_NETAMT,ONLIST_DATE,OPERATEDEPT_CODE&sortTypes=-1,-1,1&pageSize=200&pageNumber=1&reportName=RPT_OPERATEDEPT_ACTIVE&columns=ALL&source=WEB&client=WEB&filter=(ONLIST_DATE>='{d1}')"
+  url = f"https://datacenter-web.eastmoney.com/api/data/v1/get?sortColumns=TOTAL_NETAMT,ONLIST_DATE,OPERATEDEPT_CODE&sortTypes=-1,-1,1&pageSize=1000&pageNumber=1&reportName=RPT_OPERATEDEPT_ACTIVE&columns=ALL&source=WEB&client=WEB&filter=(ONLIST_DATE>='{d1}')"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
   jdata = resp.json()
@@ -73,7 +73,7 @@ def get_operate_dept() -> map:
   return result
 
 def get_turnover_rate() -> map:
-  url = f"http://18.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&po=1&np=1&fltt=2&invt=2&fid=f8&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152"
+  url = f"http://18.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=3000&po=1&np=1&fltt=2&invt=2&fid=f8&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
   jdata = resp.json()
@@ -101,7 +101,10 @@ def operate_dept():
     for item in keys_st:
         if item not in keys_ds:
             continue
-        result[item] = [operate_dept_symbl[item], symbol_turnover_rata[item]]
+        tr = symbol_turnover_rata[item]
+        if tr < 7 or tr > 25:
+          continue
+        result[item] = [operate_dept_symbl[item], tr]
     result = dict(sorted(result.items(), key=lambda item: item[1][0], reverse=True))
     cols = {'symbol_name': ['operate_dept_qty', 'turnover_rate']}
     return stand_response_ok(cols, result)
