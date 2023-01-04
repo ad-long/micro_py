@@ -102,7 +102,7 @@ def operate_dept():
         if item not in keys_ds:
             continue
         tr = symbol_turnover_rata[item]
-        if tr < 7 or tr > 25:
+        if tr < 0 or tr > 15:
           continue
         result[item] = [operate_dept_symbl[item], tr]
     result = dict(sorted(result.items(), key=lambda item: item[1][0], reverse=True))
