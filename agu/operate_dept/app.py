@@ -4,31 +4,30 @@ url: get http://127.0.0.1:5000/agu/operate_dept
 response(json):
 {
     "status":"ok",
-    "ts":1672285276204,
+    "ts":1672992515443,
     "cols":{
         "symbol":[
+            "name",
             "operate_dept_qty",
-            "turnover_rate"
+            "rise(%)"
         ]
     },
     "data":{
-        "亚星客车":[
+        "0.002095":[
+            "生 意 宝",
             10,
-            13.45
+            -7.28
         ],
-        "祥源文旅":[
+        "1.600520":[
+            "文一科技",
             10,
-            8.95
+            -7.55
         ],
-        "明牌珠宝":[
+        "0.000153":[
+            "丰原药业",
             10,
-            7.68
-        ],
-        "玉龙股份":[
-            10,
-            7.48
+            -2.46
         ]
-    }
 }
 """
 
@@ -38,6 +37,7 @@ from flask import Flask
 import requests
 import sys
 from datetime import date, timedelta
+import time
 sys.path.append("../..")
 from utils.response import stand_response_ok, stand_response_error
 
@@ -63,29 +63,45 @@ def get_operate_dept() -> map:
   result = {}
   data = jdata['result']['data']
   for item in data:
-    one_dept_symbol_list = item['SECURITY_NAME_ABBR']
+    one_dept_symbol_list = item['BUY_STOCK']
     temp_list = one_dept_symbol_list.split(' ')
     for symbol in temp_list:
+      if symbol.endswith('.SZ'):
+        symbol = symbol.replace('.SZ', '')
+        symbol = f'0.{symbol}'
+      elif symbol.endswith('.SH'):
+        symbol = symbol.replace('.SH', '')
+        symbol = f'1.{symbol}'
+      else:
+        continue
       if symbol not in result:
         result[symbol] = 1
       else:
         result[symbol] += 1
   return result
 
-def get_turnover_rate() -> map:
-  url = f"http://18.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=3000&po=1&np=1&fltt=2&invt=2&fid=f8&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152"
+
+def get_rise(symbol: str) -> list:
+  url = f"https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid={symbol}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=2"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
   jdata = resp.json()
   if jdata['data'] is None:
     return None
 
-  result = {}
-  data = jdata['data']['diff']
-  for item in data:
-    symbol = item['f14']
-    tr = item['f8']
-    result[symbol] = tr
+  code = jdata['data']['code']
+  name = jdata['data']['name']
+  data = jdata['data']['klines']
+  if len(data) != 2:
+    return None
+  pre_date = data[0].split(',')
+  cur_date = data[1].split(',')
+  pre_open = float(pre_date[1])
+  cur_close = float(cur_date[2])
+
+  rise = round((cur_close-pre_open)/pre_open*100, 2)
+  result = [code, name, rise]
+  time.sleep(1)
   return result
 
 
@@ -93,19 +109,18 @@ def get_turnover_rate() -> map:
 @app.route("/agu/operate_dept", methods=['GET'])
 def operate_dept():
     operate_dept_symbl = get_operate_dept()
-    symbol_turnover_rata = get_turnover_rate()
-    
-    result = {}
-    keys_ds = operate_dept_symbl.keys()
-    keys_st = symbol_turnover_rata.keys()
-    for item in keys_st:
-        if item not in keys_ds:
-            continue
-        tr = symbol_turnover_rata[item]
-        if tr < 0 or tr > 15:
-          continue
-        result[item] = [operate_dept_symbl[item], tr]
-    result = dict(sorted(result.items(), key=lambda item: item[1][0], reverse=True))
-    cols = {'symbol_name': ['operate_dept_qty', 'turnover_rate']}
-    return stand_response_ok(cols, result)
 
+    result = {}
+    temp_rise = map(lambda x: get_rise(x), operate_dept_symbl.keys())
+    temp_rise = list(temp_rise)
+    map_rise = {}
+    for item in temp_rise:
+      map_rise[item[0]] = [item[1], item[2]]
+    result = {}
+    for symbol, qty in operate_dept_symbl.items():
+      code = symbol.split('.')[1]
+      result[symbol] = [map_rise[code][0], qty, map_rise[code][1]]
+    result = dict(
+        sorted(result.items(), key=lambda item: item[1][1], reverse=True))
+    cols = {'symbol': ['name', 'operate_dept_qty', 'rise(%)']}
+    return stand_response_ok(cols, result)
