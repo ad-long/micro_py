@@ -149,6 +149,6 @@ def operate_dept():
       qty = operate_dept_symbl[symbol]
       result[symbol] = [map_rise[symbol][0], qty, map_rise[symbol][1]]
     result = dict(
-        sorted(result.items(), key=lambda item: item[1][2], reverse=True))
+        sorted(result.items(), key=lambda item: item[1][1], reverse=True))
     cols = {'symbol': ['name', 'operate_dept_qty', 'rise(%)']}
     return stand_response_ok(cols, result)
