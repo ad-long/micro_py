@@ -38,6 +38,7 @@ import requests
 import sys
 from datetime import date, timedelta
 import time
+from retry import retry
 sys.path.append("../..")
 from utils.response import stand_response_ok, stand_response_error
 
@@ -50,6 +51,7 @@ __HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
 
 
+@retry(requests.exceptions.SSLError, tries=3, delay=1)
 def get_operate_dept() -> map:
   today = date.today()-timedelta(days=1)
   d1 = today.strftime("%Y-%m-%d")
@@ -81,8 +83,9 @@ def get_operate_dept() -> map:
   return result
 
 
+@retry(requests.exceptions.SSLError, tries=3, delay=1)
 def get_rise(symbol: str) -> list:
-  url = f"https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid={symbol}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=2"
+  url = f"https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid={symbol}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=6"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
   jdata = resp.json()
@@ -90,19 +93,41 @@ def get_rise(symbol: str) -> list:
     return None
 
   code = jdata['data']['code']
+  if code.startswith('6'):
+    code = f'1.{code}'
+  elif code.startswith('0') or code.startswith('3'):
+    code = f'0.{code}'
+  else:
+    return None
+
   name = jdata['data']['name']
   data = jdata['data']['klines']
-  if len(data) != 2:
+  if len(data) != 6:
     return None
-  pre_date = data[0].split(',')
-  cur_date = data[1].split(',')
-  pre_open = float(pre_date[1])
-  cur_close = float(cur_date[2])
 
-  rise = round((cur_close-pre_open)/pre_open*100, 2)
-  result = [code, name, rise]
-  time.sleep(1)
-  return result
+  avg5 = 0
+  for i in range(5):
+    one_kline = data[i]
+    temp_list = one_kline.split(',')
+    close = float(temp_list[1])
+    avg5 += float(close)
+  avg5 /= 5
+
+  pre_date = data[-2]
+  temp_list = pre_date.split(',')
+  pre_open = float(temp_list[1])
+  pre_close = float(temp_list[2])
+
+  cur_date = data[-1]
+  temp_list = cur_date.split(',')
+  cur_close = float(temp_list[2])
+  if pre_open <= avg5 and pre_close >= avg5:
+    rise = round((cur_close-pre_open)/pre_open*100, 2)
+    result = [code, name, rise]
+    # print(name, cur_close, pre_open)
+    return result
+  else:
+    return None
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
@@ -110,17 +135,20 @@ def get_rise(symbol: str) -> list:
 def operate_dept():
     operate_dept_symbl = get_operate_dept()
 
-    result = {}
     temp_rise = map(lambda x: get_rise(x), operate_dept_symbl.keys())
     temp_rise = list(temp_rise)
+
     map_rise = {}
     for item in temp_rise:
+      if item is None:
+        continue
       map_rise[item[0]] = [item[1], item[2]]
+
     result = {}
-    for symbol, qty in operate_dept_symbl.items():
-      code = symbol.split('.')[1]
-      result[symbol] = [map_rise[code][0], qty, map_rise[code][1]]
+    for symbol, others in map_rise.items():
+      qty = operate_dept_symbl[symbol]
+      result[symbol] = [map_rise[symbol][0], qty, map_rise[symbol][1]]
     result = dict(
-        sorted(result.items(), key=lambda item: item[1][1], reverse=True))
+        sorted(result.items(), key=lambda item: item[1][2], reverse=True))
     cols = {'symbol': ['name', 'operate_dept_qty', 'rise(%)']}
     return stand_response_ok(cols, result)
