@@ -55,6 +55,7 @@ __HEADERS = {
 def get_operate_dept() -> map:
   today = date.today()-timedelta(days=1)
   d1 = today.strftime("%Y-%m-%d")
+  # d1 = '2023-01-06'
   url = f"https://datacenter-web.eastmoney.com/api/data/v1/get?sortColumns=TOTAL_NETAMT,ONLIST_DATE,OPERATEDEPT_CODE&sortTypes=-1,-1,1&pageSize=1000&pageNumber=1&reportName=RPT_OPERATEDEPT_ACTIVE&columns=ALL&source=WEB&client=WEB&filter=(ONLIST_DATE>='{d1}')"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
@@ -84,8 +85,8 @@ def get_operate_dept() -> map:
 
 
 @retry(requests.exceptions.SSLError, tries=3, delay=1)
-def get_rise(symbol: str) -> list:
-  url = f"https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid={symbol}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt=6"
+def get_rise(symbol: str, size: int = 5) -> list:
+  url = f"https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid={symbol}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt={size+1}"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
   jdata = resp.json()
@@ -102,16 +103,16 @@ def get_rise(symbol: str) -> list:
 
   name = jdata['data']['name']
   data = jdata['data']['klines']
-  if len(data) != 6:
+  if len(data) != size+1:
     return None
 
   avg5 = 0
-  for i in range(5):
+  for i in range(size):
     one_kline = data[i]
     temp_list = one_kline.split(',')
     close = float(temp_list[1])
     avg5 += float(close)
-  avg5 /= 5
+  avg5 /= size
 
   pre_date = data[-2]
   temp_list = pre_date.split(',')
@@ -135,7 +136,7 @@ def get_rise(symbol: str) -> list:
 def operate_dept():
     operate_dept_symbl = get_operate_dept()
 
-    temp_rise = map(lambda x: get_rise(x), operate_dept_symbl.keys())
+    temp_rise = map(lambda x: get_rise(x, 5), operate_dept_symbl.keys())
     temp_rise = list(temp_rise)
 
     map_rise = {}
