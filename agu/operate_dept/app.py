@@ -85,7 +85,7 @@ def get_operate_dept() -> map:
 
 
 @retry(requests.exceptions.SSLError, tries=3, delay=1)
-def get_rise(symbol: str, size: int = 5) -> list:
+def get_rise(symbol: str, size: int = 2) -> list:
   url = f"https://89.push2his.eastmoney.com/api/qt/stock/kline/get?secid={symbol}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&lmt={size+1}"
   # print(url)
   resp = requests.get(url, headers=__HEADERS)
@@ -106,14 +106,6 @@ def get_rise(symbol: str, size: int = 5) -> list:
   if len(data) != size+1:
     return None
 
-  avg5 = 0
-  for i in range(size):
-    one_kline = data[i]
-    temp_list = one_kline.split(',')
-    close = float(temp_list[1])
-    avg5 += float(close)
-  avg5 /= size
-
   pre_date = data[-2]
   temp_list = pre_date.split(',')
   pre_open = float(temp_list[1])
@@ -122,7 +114,7 @@ def get_rise(symbol: str, size: int = 5) -> list:
   cur_date = data[-1]
   temp_list = cur_date.split(',')
   cur_close = float(temp_list[2])
-  if pre_open <= avg5 and pre_close >= avg5:
+  if pre_open > pre_close:
     rise = round((cur_close-pre_open)/pre_open*100, 2)
     result = [code, name, rise]
     # print(name, cur_close, pre_open)
