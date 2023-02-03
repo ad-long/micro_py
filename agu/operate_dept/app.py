@@ -114,13 +114,15 @@ def get_rise(symbol: str, size: int = 2) -> list:
   cur_date = data[-1]
   temp_list = cur_date.split(',')
   cur_close = float(temp_list[2])
-  if pre_open > pre_close:
-    rise = round((cur_close-pre_open)/pre_open*100, 2)
-    result = [code, name, rise]
-    # print(name, cur_close, pre_open)
-    return result
-  else:
+  if pre_open <= pre_close:
     return None
+
+  rise = round((cur_close-pre_open)/pre_open*100, 2)
+  if rise < 0:
+    return None
+  result = [code, name, rise]
+  # print(name, cur_close, pre_open)
+  return result
 
 
 @cached(cache=TTLCache(maxsize=None, ttl=1))
