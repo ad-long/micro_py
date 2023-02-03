@@ -117,9 +117,10 @@ def get_rise(symbol: str, size: int = 2) -> list:
   if pre_open <= pre_close:
     return None
 
-  rise = round((cur_close-pre_open)/pre_open*100, 2)
-  if rise < 0:
+  if cur_close < pre_close:
     return None
+
+  rise = round((cur_close-pre_open)/pre_open*100, 2)
   result = [code, name, rise]
   # print(name, cur_close, pre_open)
   return result
